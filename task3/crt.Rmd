@@ -1,5 +1,5 @@
 ---
-title: "kauliukai"
+title: "CRT"
 author: Greta Baumilaitė
 date: 2016-03-13
 output: html_document
