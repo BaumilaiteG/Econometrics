@@ -40,7 +40,8 @@ summary(mod2)
 mod3=lm(kaina~ plotas+aukstas+garsoIzoliacija+atstumasIkiPrekybosCentro)
 summary(mod3)
 
-#abiems modeliams atstumas iki prekybos centro yra nereiksmingas(p-value>0.05),kuriami nauji modeliai ismetus atstumo iki prekybos centro kintamaji
+#abiems modeliams atstumas iki prekybos centro yra nereiksmingas(p-value>0.05)
+#kuriami nauji modeliai ismetus atstumo iki prekybos centro kintamaji
 mod4=lm(kaina~plotas+aukstas+silumosLaidumas)
 mod5=lm(kaina~plotas+aukstas+garsoIzoliacija)
 
