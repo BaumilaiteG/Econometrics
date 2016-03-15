@@ -15,18 +15,21 @@ data=read.csv2("data.txt") #nuskaitome duomenis
 attach(data)
 
 plot(data)
-#grafike matome,kadgarso izoliacija ir silumos laidumas koreliuoja
+#grafike matome,kad garso izoliacija ir silumos laidumas koreliuoja
+
 #tikriname korialiacija
 cor(garsoIzoliacija,silumosLaidumas) #0.953, tai rodo,kad kintamieji vienas nuo kito labai priklausomi
 
 ```
 
-Uzduotis: rasti geriausia modeli,kurios charakteristikos daro didziausia itaka galutinei kainai. Dabar bus kuriami ivairus modeliai,kol bus rastas geriausias.
+Uzduotis: rasti geriausia modeli,kurios charakteristikos daro didziausia itaka galutinei busto kainai. Dabar bus kuriami ivairus modeliai,kol bus rastas geriausias.
 
 ```{r}
 #sudaromas modelis su visais kintamaisiais
 mod1=lm(kaina~ plotas+aukstas+garsoIzoliacija+silumosLaidumas+atstumasIkiPrekybosCentro)
 summary(mod1)
+
+#tikrinamas koeficientu multikolinearumas
 vif(mod1) #silumos laidumo ir garso izoliacijos vif>10, tai rodo multikolinearuma
 
 #sudaromas antras modelis ismetus garso izoliacija
@@ -37,7 +40,7 @@ summary(mod2)
 mod3=lm(kaina~ plotas+aukstas+garsoIzoliacija+atstumasIkiPrekybosCentro)
 summary(mod3)
 
-#abiems modeliams atstumas iki prekybos centro yra nereiksmingas, tai kuriami nauji modeliai ismetus atstumo iki prekybos centro kintamaji
+#abiems modeliams atstumas iki prekybos centro yra nereiksmingas(p-value>0.05),kuriami nauji modeliai ismetus atstumo iki prekybos centro kintamaji
 mod4=lm(kaina~plotas+aukstas+silumosLaidumas)
 mod5=lm(kaina~plotas+aukstas+garsoIzoliacija)
 
@@ -73,4 +76,4 @@ durbinWatsonTest(mod6) #p-value=0.334 >0.05 autokoreliacijos nera
 
 ```
 
-ISVADA: galima spresti,kad mod6 yra galutinis modelis. Busto kaina priklauso nuo buto ploto, auksto ir garso izoliacijos.
+ISVADA: galima spresti,kad mod6 yra galutinis modelis. Busto kaina priklauso nuo busto ploto, auksto ir garso izoliacijos.
