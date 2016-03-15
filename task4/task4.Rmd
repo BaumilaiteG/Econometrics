@@ -1,0 +1,76 @@
+---
+title: "task4"
+author: Greta Baumilaitė
+date: 2016-03-15
+output: html_document
+---
+UZDUOTIS: Aplanke task4 yra duomenų failas, kuriame rasite nekilnojamo turto (o tiksliau gyvenamųjų butų) kainas ir kaikurias jų charakteristikas. Jūsų užduotis yra atlikti išsamią tiesinę regresiją. Lygtis reikalinga prekyboms agentams, kad geriau suprastų kokią įtaką skirtingos charakteristikos daro galutinei kainai.
+
+
+```{r}
+setwd("~/Desktop")
+getwd()
+library(car) #reikalinga biblioteka dirbant
+data=read.csv2("data.txt") #nuskaitome duomenis
+attach(data)
+
+plot(data)
+#grafike matome,kadgarso izoliacija ir silumos laidumas koreliuoja
+#tikriname korialiacija
+cor(garsoIzoliacija,silumosLaidumas) #0.953, tai rodo,kad kintamieji vienas nuo kito labai priklausomi
+
+```
+
+Uzduotis: rasti geriausia modeli,kurios charakteristikos daro didziausia itaka galutinei kainai. Dabar bus kuriami ivairus modeliai,kol bus rastas geriausias.
+
+```{r}
+#sudaromas modelis su visais kintamaisiais
+mod1=lm(kaina~ plotas+aukstas+garsoIzoliacija+silumosLaidumas+atstumasIkiPrekybosCentro)
+summary(mod1)
+vif(mod1) #silumos laidumo ir garso izoliacijos vif>10, tai rodo multikolinearuma
+
+#sudaromas antras modelis ismetus garso izoliacija
+mod2=lm(kaina~ plotas+aukstas+silumosLaidumas+atstumasIkiPrekybosCentro)
+summary(mod2) 
+
+#sudaromas modelis ismetus silumos laiduma
+mod3=lm(kaina~ plotas+aukstas+garsoIzoliacija+atstumasIkiPrekybosCentro)
+summary(mod3)
+
+#abiems modeliams atstumas iki prekybos centro yra nereiksmingas, tai kuriami nauji modeliai ismetus atstumo iki prekybos centro kintamaji
+mod4=lm(kaina~plotas+aukstas+silumosLaidumas)
+mod5=lm(kaina~plotas+aukstas+garsoIzoliacija)
+
+#tikrinam kuris modelis yra geresnis
+AIC(mod4)
+AIC(mod5)
+#akaikes koeficientas parodo,kad mod5 yra geresnis
+
+#toliau dirbsime su mod5
+summary(mod5) #visi kintamieji reiksmingi
+
+```
+
+Galime spresti,kad mod5 yra geriausias. Patikrinsime isskirtis, autokoreliacija ir heteroskedastiskuma.
+
+```{r}
+
+#ieskomos mod5 modelio isskirtys
+outlierTest(mod5) #jos yra 253,254 eilutese
+data1=data[-c(253,254),] #panaikinamos paskutines eilutes su isskirtimis
+
+#sudaromas modelis be isskirciu
+mod6=lm(kaina~plotas+aukstas+garsoIzoliacija, data=data1)
+summary(mod6)
+
+#mod6 yra geriausias modelis gautas is visu duomenu
+#tikrinam mod6 heteroskedastiskuma
+ncvTest(mod6) #p-value =0.156 > 0.05 nera heteraskedastiskumo
+
+#tikrinam mod6 autokoreliacija
+durbinWatsonTest(mod6) #p-value=0.334 >0.05 autokoreliacijos nera
+
+
+```
+
+ISVADA: galima spresti,kad mod6 yra galutinis modelis. Busto kaina priklauso nuo buto ploto, auksto ir garso izoliacijos.
