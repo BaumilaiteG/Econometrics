@@ -1,0 +1,89 @@
+---
+title: "task5"
+author: Greta Baumilaitė
+date: 2016-03-22
+output: html_document
+---
+UZDUOTIS: Pinigų paklausa. Šioje užduotyje reikia atlikti tiesinę regresiją. Pakete dynlm yra duomenų masyvas M1Germany - ten yra ir jo aprašymas. Iš turimų duomenų sudarykite ir įvertinkite tiesinę regresiją, kurios endogeninis kintamasis yra logm1. Lygtis būtų naudojama prognozuoti pinigų kiekį artimiausiam laikotarpiui į prieki remiantis dabartine situacija. Taigi prognozės sudarymui lygtis gali naudoti tik tuos duomenis, kurie būtų žinomi prognozavimo momentu.
+
+
+Duomenys ir bibliotekos,kurias naudosime
+```{r}
+install.packages("dynlm")
+library(dynlm)
+library(car)
+M1Germany
+```
+
+Issibreziame grafika
+
+```{r}
+plot(M1Germany) 
+colnames(M1Germany) 
+```
+
+
+Pradedame kurti modelius
+```{r}
+
+mod1=dynlm((logm1)~L(logprice,1)+(L(loggnp,1))+(L(interest,1)), data = M1Germany, start = c(1960,1), end = c(1996,3))
+summary(mod1) #loggnp nera reiksmingas
+#tikriname vif'us
+vif(mod1) #L(logprice, 1),L(loggnp, 1) >10
+
+#sukuriamia modeli be loggnp
+mod2=dynlm((logm1)~L(logprice,1)+(L(interest,1)), data = M1Germany, start = c(1960,1), end = c(1996,3))
+summary(mod2)
+vif(mod2)
+
+#sukuriame modeli be logprice
+mod3=dynlm((logm1)~(L(loggnp,1))+(L(interest,1)), data = M1Germany, start = c(1960,1), end = c(1996,3))
+summary(mod3)
+vif(mod3)
+
+#toliau kuriami modeliai, naudojant skirtumo funkcija, visi vif'ai bus reiksmingi
+mod4=dynlm((logm1)~L(logprice,2)+diff(L(loggnp,2))+(L(interest,4)), data = M1Germany, start = c(1960,1), end = c(1996,3))
+summary(mod4)
+vif(mod4)
+
+mod5=dynlm((logm1)~L(logprice,3)+diff(L(loggnp,4))+(L(interest,1)), data = M1Germany, start = c(1960,1), end = c(1996,3))
+summary(mod5)
+vif(mod5)
+
+mod6=dynlm((logm1)~L(logprice,2)+(diff(L(loggnp, 2)))+(L(interest,4)), data = M1Germany, start = c(1960,1), end = c(1996,3))
+summary(mod6)
+vif(mod6)
+
+mod7=dynlm((logm1)~L(logprice,1)+(diff(L(loggnp, 3)))+(L(interest,2)), data = M1Germany, start = c(1960,1), end = c(1996,3))
+summary(mod7)
+vif(mod7)
+
+
+```
+
+Tikriname kuris modelis yra tinkamiausias
+
+```{r}
+AIC(mod1)
+AIC(mod2)
+AIC(mod3)
+AIC(mod4)
+AIC(mod5)
+AIC(mod6)
+AIC(mod7)
+#pagal AKAIKE mod3 yra geriausias
+
+```
+
+Nusibreziame histograma
+
+```{r}
+hist(resid(mod3), probability = TRUE)
+lines(density(resid(mod3)), col = 3, lwd=3)
+
+liekanos=as.vector(mod3$residuals)
+shapiro.test(liekanos) #p-value=0.06185 > 0.05, galime spresti,kad liekanos yra normalios
+
+```
+
+ISVADA: pagal gautas isvadas,galime teigti,kad mod3 yra tinkamiausias modelis
