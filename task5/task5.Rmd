@@ -86,4 +86,4 @@ shapiro.test(liekanos) #p-value=0.06185 > 0.05, galime spresti,kad liekanos yra 
 
 ```
 
-ISVADA: pagal gautas isvadas,galime teigti,kad mod3 yra tinkamiausias modelis
+ISVADA: pagal gautus rezultatus galime teigti,kad mod3 yra tinkamiausias modelis
