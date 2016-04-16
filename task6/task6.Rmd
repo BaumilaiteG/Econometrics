@@ -49,4 +49,5 @@ plot(snaive,main="Seasonal naive method grafikas",xlab="laikas",ylab="duomenys")
 
 ```
  Which do you think is best? Why?
+ 
  Geriausias yra NAIVE metodas siuo atveju,nes laikotarpis trumpas ir sis metodas atsizvelgia i paskutine reiksme. MEAN metodo grafikas nera tikslus,nes paskutiniu metu buvo didelis augimas ir mazai tiketina,kad bus toks nuopolis. Drift metodas tap pat nera tinkamas,nes jis ignoruoja buvusi kritima ir atsizvelga tik i kilima, kas nera labai tikslu. 
