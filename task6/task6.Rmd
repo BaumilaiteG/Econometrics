@@ -1,0 +1,51 @@
+---
+title: "task6"
+output: html_document
+author: Greta Baumilaitė
+date:2016-04-16
+---
+UZDUOTIS: Use the Dow Jones index (data set dowjones) to do the following: 
+
+
+(a) Produce a time plot of the series.
+```{r}
+install.packages("fpp",dependencies=TRUE) #instaliuojames reikiama paketa
+library(fpp) #bibliioteka ,kurioje yra musu duomenys
+d=dowjones
+
+plot(d,main="Dowjones grafikas",xlab="laikas",ylab="duomenys") 
+```
+
+(b) Produce forecasts using the drift method and plot them
+```{r}
+dm=rwf(dowjones,drift=TRUE,h=20) #(b)
+plot(dm,main="Drifto metodo grafikas",xlab="laikas",ylab="duomenys")
+```
+
+(c) Show that the graphed forecasts are identical to extending the line drawn between the ﬁrst and last observations.
+```{r}
+d
+x1<- 1
+x2<- 78
+y1<-dowjones[1]   #pirma reiksme
+y2<-dowjones[78]  #paskutine reiksme
+
+segments(x1, y1, x2, y2,col=3) #funkcija,kuri isbreze linija tarp pirmos ir paskutines reiksmes
+
+```
+
+(d) Try some of the other benchmark functions to forecast the same data set.
+```{r}
+par(mfrow=c(2,2))
+
+mean=meanf(d, h=20)
+plot(mean, main="Mean grafikas",xlab="laikas",ylab="duomenys")
+naive=naive(d, h=20)
+plot(naive,main="Naive method grafikas",xlab="laikas",ylab="duomenys")
+snaive=snaive(d, h=20)
+plot(snaive,main="Seasonal naive method grafikas",xlab="laikas",ylab="duomenys")
+#kadangi duomenyse nera sezoniskumo,tai naive ir snaive grafikai vienodi
+
+```
+ Which do you think is best? Why?
+ Geriausias yra NAIVE metodas siuo atveju,nes laikotarpis trumpas ir sis metodas atsizvelgia i paskutine reiksme. MEAN metodo grafikas nera tikslus,nes paskutiniu metu buvo didelis augimas ir mazai tiketina,kad bus toks nuopolis. Drift metodas tap pat nera tinkamas,nes jis ignoruoja buvusi kritima ir atsizvelga tik i kilima, kas nera labai tikslu. 
