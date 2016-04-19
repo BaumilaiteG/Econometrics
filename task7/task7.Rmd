@@ -33,14 +33,20 @@ tsdisplay(ibmclose, plot.type="scatter") #ibmclose duomenys
 ```
 
 UZDUOTIS: 3. For the data set bricksq:
-(a) Split the data into two parts
+
+(a) Split the data into two parts.
+
 (b) Check that your data have been split appropriately by produc-
 ing the following plot.
+
 (c) Calculate forecasts using each of the four benchmark methods
 applied to bricks1.
+
 (d) Compare the accuracy of your forecasts against the actual val-
 ues stored in bricks2. 
+
 (e) Which method does best? Why?
+
 (f) For the best method, compute the residuals and plot them.
 Do the residuals appear to be uncorrelated and normally dis-
 tributed?
@@ -83,14 +89,19 @@ Acf(res) #liekanos autokoreliuotos (lagai virs melynos linijos)
 ```
 
 UZDUOTIS: 4. Consider the daily closing IBM stock prices (data set ibmclose).
+
 (a) Produce some plots of the data in order to become familiar
 with it.
+
 (b) Split the data into a training set of 300 observations and a test
 set of 69 observations.
+
 (c) Try various benchmark methods to forecast the training set and
 compare the results on the test set. Which method did best?
+
 (d) For the best method, compute the residuals and plot them.
 What do the plots tell you?
+
 (e) Can you invent a better forecasting method than any of the
 benchmark methods for these data?
 
