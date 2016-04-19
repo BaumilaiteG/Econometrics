@@ -1,0 +1,138 @@
+---
+title: "task7"
+author: "Greta Baumilaitė"
+date: "2016-04-19"
+output: html_document
+---
+
+UZDUOTIS: 1. The function tsdisplay(data, plot.type="scatter") is useful
+for showing a time plot, ACF plot and lagged scatterplot on the
+same graph. Use it to produce plots of the following time series:
+bricksq, hsales, ibmclose
+Can you spot the effects of seasonality, cyclicity and trend?
+
+
+```{r}
+library(fpp)
+
+tsdisplay(bricksq, plot.type="scatter") #bricksq duomenys
+#SEZONISKUMAS: matosi ryskus sezoniskumas grafike, tai parodo esantys kalneliai
+#CIKLISKUMAS: ACF grafikas parodo esanti cikliskuma duomenyse
+#TRENDAS: kylantis
+
+tsdisplay(hsales, plot.type="scatter") #hsales duomenys
+#SEZONISKUMAS: matosi ryskus sezoniskumas grafike, tai parodo esantys kalneliai
+#CIKLISKUMAS: ACF grafikas parodo esanti cikliskuma duomenyse
+#TRENDAS: aiskaus trendo nustatyti negalima
+
+tsdisplay(ibmclose, plot.type="scatter") #ibmclose duomenys
+#SEZONISKUMAS: sezoniskumo nera arba jo nesimato is duotu duomenu
+#CIKLISKUMAS: ciklus sunku nustatyti (cikliskumo nera)
+#TRENDAS: trendo nera
+
+```
+
+UZDUOTIS: 3. For the data set bricksq:
+(a) Split the data into two parts
+(b) Check that your data have been split appropriately by produc-
+ing the following plot.
+(c) Calculate forecasts using each of the four benchmark methods
+applied to bricks1.
+(d) Compare the accuracy of your forecasts against the actual val-
+ues stored in bricks2. 
+(e) Which method does best? Why?
+(f) For the best method, compute the residuals and plot them.
+Do the residuals appear to be uncorrelated and normally dis-
+tributed?
+
+```{r}
+bricksq
+bricks1=window(bricksq, end=1987.99)  #(a)
+bricks2=window(bricksq, start=1988)
+
+plot(bricksq, main="Bricksq duomenu grafikas", xlab="laikas") #(b)
+lines(bricks1,col="red")
+lines(bricks2,col="blue")
+
+par(mfrow=c(2,2)) #(c)
+vid=plot(meanf(bricks1, h=27),main="vidurkio metodo grafikas",xlab="laikas",ylab="duomenys")  # vidurkio metodas
+nai=plot(naive(bricks1, h=27),main="naive metodo grafikas",xlab="laikas",ylab="duomenys")   # naive metodas
+snai=plot(snaive(bricks1,h=27),main="seasonal naive metodo grafikas",xlab="laikas",ylab="duomenys")  # seasonal metodas
+drift=plot(rwf(bricks1, drift=TRUE, h=27),main="drift metodo grafikas",xlab="laikas",ylab="duomenys")  # drift metodas
+
+f1=meanf(bricks1) #(d)
+f2=naive(bricks1)
+f3=snaive(bricks1)
+f4=rwf(bricks1)
+accuracy(f1,bricks2)
+accuracy(f2,bricks2)
+accuracy(f3,bricks2)
+accuracy(f4,bricks2)
+
+#(e)
+#Geriausias metodas prognozavimui siuo atveju yra seasonal naive metodas, nes jis turi maziausius RMSE, MAE, MAPE, MASE.Seasonal naive metodas atsizvelgia i sezoniskuma.Is grafiko galime matyti,kad duomenys yra sezoniski. Sezoniškuma galime patikrinti su ACF:
+acf(bricksq) #aiskiai matosi sezoniskumas
+
+res=residuals(f1) #(f)
+plot(res)
+hist(res, breaks="FD") #is grafiko galime teigti,kad liekanos lyg ir pasiskirsciusios normaliai
+#isitikinimui patikrinam ju normaluma
+shapiro.test(res) #p-value=0.0002464 <0.05,tad liekanos nera normalios
+Acf(res) #liekanos autokoreliuotos (lagai virs melynos linijos)
+
+```
+
+UZDUOTIS: 4. Consider the daily closing IBM stock prices (data set ibmclose).
+(a) Produce some plots of the data in order to become familiar
+with it.
+(b) Split the data into a training set of 300 observations and a test
+set of 69 observations.
+(c) Try various benchmark methods to forecast the training set and
+compare the results on the test set. Which method did best?
+(d) For the best method, compute the residuals and plot them.
+What do the plots tell you?
+(e) Can you invent a better forecasting method than any of the
+benchmark methods for these data?
+
+```{r}
+ibmclose
+tsdisplay(ibmclose, plot.type="scatter") #(a)
+
+a=window(ibmclose, end=300)  #(b)
+b=window(ibmclose, start=301)
+plot(ibmclose, main="ibmclose duomenu grafikas") #isbreziu grafika
+lines(a,col="red") #spalvotai parodau duomenu padalinima
+lines(b,col="blue")
+
+par(mfrow=c(2,2)) #(c)
+vid=plot(meanf(a, h=27),main="vidurkio metodo grafikas",xlab="laikas",ylab="duomenys")  # vidurkio metodas
+nai=plot(naive(a, h=27),main="naive metodo grafikas",xlab="laikas",ylab="duomenys")   # naive metodas
+snai=plot(snaive(a,h=27),main="seasonal naive metodo grafikas",xlab="laikas",ylab="duomenys")  # seasonal metodas
+drift=plot(rwf(a, drift=TRUE, h=27),main="drift metodo grafikas",xlab="laikas",ylab="duomenys")  # drift metodas
+ 
+#kadangi nera sezoniskumo snaive ir naive grafikai vienodi. Remiantis grafiku pateikta informacija, galima teigti, kad drift ir naive metodai prognozes parodo tinkamiausiai. Patiksinsim:
+
+accuracy(meanf(a),b)
+accuracy(naive(a),b)
+accuracy(snaive(a),b)
+accuracy(rwf(a),b)
+
+#geriausias metodas,tas kurio ME,RMSE,MAE.. yra maziausi. Is gautu atsakymu galime teigti,kad NAIVE ir DRIFt metodas siems duomenims yra geriausias.
+
+#(d)
+#NAIVE metoda pasirenku kaip geriausia,nes jis atsizvelgia i duomenu didejima ir mazejima, nes drift metodas atsizvelge tik i paskutini staigu mazejima.
+res=residuals(naive(a, h=27)) 
+plot(res)
+hist(res, breaks="FD") #is grafiko galime teigti,kad liekanos lyg ir pasiskirsciusios normaliai
+#isitikinimui patikrinam ju normaluma
+shapiro.test(res) #p-value<0.05,tad liekanos nera normalios
+Acf(res) #liekanos autokoreliuotos (lagai virs melynos linijos)
+
+#(e)
+#patikrinsiu ar yra baltasis triuksmas
+Box.test(res, type="Lj")
+#Kadangi p-value < 0.05, nera baltojo triuksmo.
+
+#geresni metoda galima israsti,kadangi nera baltojo triuksmo
+
+```
