@@ -5,6 +5,7 @@ date: "Tuesday, April 26, 2016"
 output: html_document
 ---
 UZDUOTIS:  For this exercise, use the monthly Australian short-term overseas visitors data, May 1985–April 2005. (Data set: visitors in expsmooth package.)
+
 (a) Use ets to ﬁnd the best model for these data and record the training set RMSE. You should ﬁnd that the best model is ETS(M,A,M).
 
 ```{r}
@@ -59,6 +60,7 @@ plot(visitors) #grafikas parodo begant laikui didejanti trenda
 
 ```
 (e) How does this problem bias the comparison of the RMSE values from (1a) and (1b)? (Hint: think about the eﬀect of the missing values in e.) 
+
 negalim palyginti 1a ir 1b RMSE,nes 1b duomenu yra maziau nei 1a.
 1a RMSE=15.86105
 1b RMSE=18.73602
@@ -80,6 +82,7 @@ sqrt(mean(e^2,na.rm=TRUE))
 
 ```
 (g) How does the RMSE computed in (1f) compare to that computed in (1b)? Does the re-selection of a model at each step make much diﬀerence?
+
 1b RMSE=18.73602
 1f RMSE=19.97897
 manau reiksmingo skirtumo nera tarp situ skaiciu,tad parinkus tinkama modeli ciklas greiciau persisuka ir apskaiciuoja RMSE. 
