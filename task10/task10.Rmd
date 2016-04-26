@@ -1,0 +1,105 @@
+---
+title: "task10"
+author: "Greta Baumilaitė"
+date: "Tuesday, April 26, 2016"
+output: html_document
+---
+
+UZDUOTIS: 1.For this exercise, use the price of a dozen eggs in the United States
+from 1900–1993 (data set eggs ). Experiment with the various op-
+tions in the holt() function to see how much the forecasts change
+with damped or exponential trend. Also try changing the param-
+eter values for α and β to see how they affect the forecasts. Try to
+develop an intuition of what each parameter and argument is doing
+to the forecasts.
+[Hint: use h=100 when calling holt() so you can clearly see the
+differences between the various options when plotting the forecasts.]
+Which model gives the best RMSE?
+Do the residuals from the best model look like white noise?
+
+```{r}
+library(fpp)
+eggs #perziurime kaip atrodo duomenys
+
+plot(eggs) #grafikas rodo mazejanti kiausiniu kainos trenda
+plot(holt(eggs,h=100,)) #perziurim koks trendas 
+
+par(mfrow=c(2,2))
+
+#toliau isbreziami dvieju metodu grafikai damped ir exponential
+met1=holt(eggs,h=100, damped=TRUE)
+plot(met1) 
+a=met1$model
+a
+
+met2=holt(eggs,h=100, exponential=TRUE)
+plot(met2)
+b=met2$model
+b
+#is grafiku matome,kad damped metodas neatsizvelgia i mazejanti trenda ir toliau prognuozuoja pastovia kaina. Exponential metodas atvirksciai,atsizvelgia i buvusi kainos mazejima ir toliau prognozuoja mazejanti trenda. Alfa abieju metodu svyruoja ties 0.82-0.83,o beta yra labai maza. AIC koeficientas parodo,kad exponential metodas siuo atveju yra geresnis.
+
+#toliau sukuriami du modeliai exponential metodu,vienas su padidintu alfa,kitas su pamazintu
+met3=holt(eggs,h=100, exponential=TRUE,alfa=0.005)
+plot(met3)
+
+met4=holt(eggs,h=100, exponential=TRUE, alfa=0.99)
+plot(met4)
+#exponential metodu prognoze remiasi eksponentine funkcija(niekada nepasieks neigiamu reiksmiu),sumazinus alfa duomenys susiglodina.
+
+#tikrinsime kuris modelis duoda geriausia RMSE
+accuracy(met1)
+accuracy(met2)
+accuracy(met3)
+accuracy(met4)
+
+#met2,met3 ir met4 RMSE yra vienodi ir maziausi,tai modeliai yra geriausi.
+#toliau balta triuksma tikrinsiu su met2
+Acf(met2$res) #kadangi stulpelis yra islindes uz melynos linijos,baltasis triuksmas yra
+Box.test(met2$res) #p-value>0.05,tai irodo,kad duomenyse yra baltasis triuksmas. Modelis yra geras.
+
+
+
+```
+UZDUOTIS: 2. For this exercise, use the monthly Australian short-term overseas
+visitors data, May 1985–April 2005. (Data set: visitors.)
+(a) Make a time plot of your data and describe the main features of
+the series.
+(b) Forecast the next two years using Holt-Winters’ multiplicative
+method.
+(c) Why is multiplicative seasonality necessary here?
+(d) Experiment with making the trend exponential and/or damped.
+(e) Compare the RMSE of the one-step forecasts from the various
+methods. Which do you prefer?
+(f) Check that the residuals from the best model look like white
+noise.
+```{r}
+visitors #perziurime duomenis
+
+tsdisplay(visitors, plot.type="scatter") #(a)
+#is grafiko ryskiai matosi didejantis trendas, yra sezoniskumas ir cikliskumas.
+
+hw=hw(visitors, seasonal="mult",h=24) #(b)
+plot(hw)
+
+#butinas,nes duomenyse akivaizdus sezoniskumas,tai parodo didejancios bangos. (c)
+
+#tikrinami exponential ir dumped trendai
+par(mfrow=c(2,1))
+ex=hw(visitors, seasonal="mult",h=24, exponential=TRUE)
+plot(ex)
+
+da=hw(visitors, seasonal="mult",h=24, damped = TRUE)
+plot(da)
+
+#is grafiku matosi,kad exponential metodas niekuom nesiskiria nuo pradinio grafiko. Tai galima manyti,kad damped metodas siuo atveju yra geresnis.
+
+accuracy(hw) #(e)
+accuracy(ex)
+accuracy(da)
+#RMSE damped metodo yra maziausias ,tad tas modelis yra geriausias.
+
+#(f)
+Acf(da$res) #kadangi keli stulpeliai yra islinde uz melynos linijos,baltasis triuksmas yra
+Box.test(da$res) #p-value>0.05,tai irodo,kad duomenyse yra baltasis triuksmas. Tai geras zenklas,kadangi parodo,kad modelis yra geras
+
+```
