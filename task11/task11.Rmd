@@ -1,0 +1,32 @@
+---
+title: "task11"
+author: "Greta Baumilaitė"
+date: "Tuesday, April 26, 2016"
+output: html_document
+---
+UZDUOTIS: Use ets() to ﬁnd the best ETS model for the price of eggs (data set eggs). How does this model compare to the one you found in the previous lab session?
+
+```{r}
+library(fpp)
+eggs #musu duomenys
+
+ets(eggs)   # siulomas metodas ets(M,N,N)
+met1=forecast(ets(eggs), h=100)
+plot(met1)
+
+#geriausias modelis is task10
+met2=holt(eggs,h=100, exponential=TRUE)
+plot(met2)
+
+accuracy(met1)
+accuracy(met2)
+#RMSE met2 yra maziausias,tad tas modelis yra geresnis
+
+Acf(met1$res)
+Acf(met2$res)
+#abiejuose modeliuose yra baltasis triuksmas,nes stulpeliai uzeina uz melynos linijos
+
+Box.test(met1$res)
+Box.test(met2$res) #p-value abu yra >0.05 tai abu modeliai tinkami,nes yra baltasis triuksmas.
+
+```
