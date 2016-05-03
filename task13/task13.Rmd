@@ -33,7 +33,8 @@ plot(df)
 #H1: duomenys nestacionarus
 kpss.test(df) #p-value < 0.05, H0 atmetam(duomenys nera stacionarus)
 
-#kadangi mes turime gauti ,kad duomenys butu stacionarus, tai diferencijuosime antra karta,nors mums siule tik karta
+#kadangi mes turime gauti ,kad duomenys butu stacionarus
+#tai diferencijuosime antra karta,nors mums siule tik karta
 df2=diff(BoxCox(a,lambda=lambda1),differences=2)
 plot(df2)
 kpss.test(df2) # gavome,kad p-value > 0.05 ,kas reiskia ,kad duomenys stacionarus.
