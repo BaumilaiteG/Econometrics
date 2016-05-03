@@ -101,7 +101,8 @@ plot(df6)
 kpss.test(df6) #p-value > 0.05, H0 atmetam(duomenys stacionarus)
 
 ```
-2. Why is a Box-Cox transformation unhelpful for the cangas data?
+2.
+Why is a Box-Cox transformation unhelpful for the cangas data?
 
 pritaikysime Box-cox cangas duomenims ir paziuresime,kas gausis
 ```{r}
@@ -118,7 +119,8 @@ plot(box)
 ```
 Niekas nepasikeite, box-cox funkcija nepakeite pradinio grafiko. Duomenys suskaldyti dalimis: pradzioje ir pabaigoje vyrauja mazesni svyravimai , o ties viduriu jie padideje. Box-cox naudinagas tik tiems duomenims,kurie turi didejanti trenda svyravimams.
 
-3. Download the data at http://robjhyndman.com/data/retail.xls .
+3.
+Download the data at http://robjhyndman.com/data/retail.xls .
 Choose one of the series and find an appropriate Box-Cox transfor-
 mation and order of differencing in order to obtain stationary data.
 ```{r}
