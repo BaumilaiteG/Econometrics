@@ -1,0 +1,142 @@
+---
+title: "task13"
+author: "Greta Baumilaitė"
+date: "Tuesday, May 03, 2016"
+output: html_document
+---
+
+UZDUOTIS: 1. For the following series, find an appropriate Box-Cox transforma-
+tion and order of differencing in order to obtain stationary data.
+(a) usnetelec
+(b) usgdp
+(c) mcopper
+(d) enplanements
+(e) visitors
+
+```{r}
+library(fpp)
+a=usnetelec
+a
+
+tsdisplay(a, plot.type="scatter") #didejantis trendas,jokio cikliskumo,jokio sezoniskumo
+
+lambda1=BoxCox.lambda(a)
+lambda1 #lambda=0.517
+n1=ndiffs(a) #nesezoniski duomenys
+n1 #diferencijavimo eile
+
+df=diff(BoxCox(a,lambda=lambda1),differences=n1)
+plot(df)
+
+#tikrinsime ar duomenys stacionarus
+#H0: duomenys stacionarus
+#H1: duomenys nestacionarus
+kpss.test(df) #p-value < 0.05, H0 atmetam(duomenys nera stacionarus)
+
+#kadangi mes turime gauti ,kad duomenys butu stacionarus, tai diferencijuosime antra karta,nors mums siule tik karta
+df2=diff(BoxCox(a,lambda=lambda1),differences=2)
+plot(df2)
+kpss.test(df2) # gavome,kad p-value > 0.05 ,kas reiskia ,kad duomenys stacionarus.
+
+b=usgdp
+b
+tsdisplay(b, plot.type="scatter") #didejantis trendas,jokio cikliskumo,jokio sezoniskumo
+
+lambda2=BoxCox.lambda(b)
+lambda2 #lambda=0.366
+n2=ndiffs(b) #nesezoniski duomenys
+n2 #diferencijavimo eile
+
+df3=diff(BoxCox(b,lambda=lambda2),differences=n2)
+plot(df3)
+
+#tikrinsime ar duomenys stacionarus
+kpss.test(df3) #p-value > 0.05, H0 atmetam(duomenys stacionarus)
+
+c=mcopper
+c
+tsdisplay(c, plot.type="scatter") #didejantis trendas,jokio cikliskumo,nera sezoniskumo
+
+lambda3=BoxCox.lambda(c)
+lambda3 #lambda=0.192
+n3=ndiffs(c) #nesezoniski duomenys
+n3 #diferencijavimo eile
+
+df4=diff(BoxCox(c,lambda=lambda3),differences=n3)
+plot(df4)
+
+#tikrinsime ar duomenys stacionarus
+kpss.test(df4) #p-value > 0.05, H0 atmetam(duomenys stacionarus)
+
+d=enplanements
+d
+tsdisplay(d, plot.type="scatter") #didejantis trendas,vyrauja cikliskumas,yra sezoniskumas
+
+lambda4=BoxCox.lambda(d)
+lambda4 #lambda=-0.227
+n4=nsdiffs(d) #sezoniski duomenys
+n4 #diferencijavimo eile
+
+df5=diff(BoxCox(d,lambda=lambda4),differences=n4)
+plot(df5)
+
+#tikrinsime ar duomenys stacionarus
+kpss.test(df5) #p-value > 0.05, H0 atmetam(duomenys stacionarus)
+
+
+e=visitors
+e
+tsdisplay(e, plot.type="scatter") #didejantis trendas,vyrauja cikliskumas,yra sezoniskumas
+
+lambda5=BoxCox.lambda(e)
+lambda5 #lambda=0.277
+n5=nsdiffs(e) #sezoniski duomenys
+n5 #diferencijavimo eile
+
+df6=diff(BoxCox(e,lambda=lambda5),differences=n5)
+plot(df6)
+
+#tikrinsime ar duomenys stacionarus
+kpss.test(df6) #p-value > 0.05, H0 atmetam(duomenys stacionarus)
+
+```
+2. Why is a Box-Cox transformation unhelpful for the cangas data?
+
+pritaikysime Box-cox cangas duomenims ir paziuresime,kas gausis
+```{r}
+f=cangas
+f
+plot(cangas)
+
+lambda6=BoxCox.lambda(f)
+lambda6 #lambda=0.577
+
+box=BoxCox(f,lambda=lambda6)
+plot(box)
+
+```
+Niekas nepasikeite, box-cox funkcija nepakeite pradinio grafiko. Duomenys suskaldyti dalimis: pradzioje ir pabaigoje vyrauja mazesni svyravimai , o ties viduriu jie padideje. Box-cox naudinagas tik tiems duomenims,kurie turi didejanti trenda svyravimams.
+
+3. Download the data at http://robjhyndman.com/data/retail.xls .
+Choose one of the series and find an appropriate Box-Cox transfor-
+mation and order of differencing in order to obtain stationary data.
+```{r}
+setwd("~/Desktop")
+getwd()
+duom=read.csv2("co.csv", header=T)
+da=duom[,15]
+data = ts(da, start=c(1982,4), frequency=12)
+plot(data)
+
+lambda7=BoxCox.lambda(data)
+lambda7 #lambda=-0.3887249
+n6=nsdiffs(data) #sezoniski duomenys
+n6 #diferencijavimo eile
+
+df7=diff(BoxCox(data,lambda=lambda7),differences=n6)
+plot(df7)
+
+#tikrinsime ar duomenys stacionarus
+kpss.test(df6) #p-value > 0.05, H0 atmetam(duomenys stacionarus)
+
+```
