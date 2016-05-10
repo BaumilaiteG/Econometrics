@@ -152,6 +152,7 @@ auto.arima(tr1)$aicc
 ```
 
 UZDUOTIS:3. For the mcopper data:
+
 (a) if necessary, find a suitable Box-Cox transformation for the data;
 
 (b) fit a suitable ARIMA model to the transformed data using
