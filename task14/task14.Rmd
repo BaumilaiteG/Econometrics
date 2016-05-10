@@ -1,0 +1,206 @@
+---
+title: "task14"
+author: "Greta Baumilaitė"
+date: "Tuesday, May 10, 2016"
+output: html_document
+---
+
+UZDUOTIS:1. For the wmurders data:
+(a) if necessary, find a suitable Box-Cox transformation for the data;
+(b) fit a suitable ARIMA model to the transformed data using
+auto.arima();
+(c) try some other plausible models by experimenting with the
+orders chosen;
+(d) choose what you think is the best model and check the residual
+diagnostics;
+(e) produce forecasts of your fitted model. Do the forecasts look
+reasonable?
+(f) compare the results with what you would obtain using ets()
+(with no transformation).
+
+```{r}
+library(fpp)
+data=wmurders
+data
+plot(data)
+tsdisplay(data)
+#duomenys neturi aiskaus trendo. Nera sezoniskumo.
+#nenaudosime box-cox transformacijos, nes svyravimai nera didejantys  #(a)
+
+auto.arima(data) #(b)
+#ARIMA(1,2,1)
+
+#tikrinsime ar duomenys yra stacionarus #(c)
+ndiffs(data)
+plot(diff(data, diff=ndiffs(data))) 
+#H0: duomenys stacionarus
+#H1: duomenys nestacionarus
+kpss.test(diff(data, diff=ndiffs(data))) #p-value >0.05 duomenys yra stacionarus
+
+Acf(diff(data, diff=ndiffs(data)))
+#MA(2) nes tik du lagai uzlinde uz melynos linijos
+
+fit1=Arima(data,order=c(0,2,0))
+fit2=Arima(data,order=c(1,2,0))
+fit3=Arima(data,order=c(2,2,2))
+
+fit1$aicc
+fit2$aicc
+fit3$aicc
+auto.arima(data)$aicc
+#maziausias aicc yra auto.arima modelio,tai bus musu geriausias modelis
+
+#H0:paklaidos yra baltasis triuksmas
+#H1:paklaidos enra baltasis triuksmas
+Acf(residuals(auto.arima(data)))#(d)
+Box.test(residuals(auto.arima(data)), type="Lj")
+#p-value > 0.05 , tai paklaidos yra baltasis triuksmas, modelis geras.
+
+a=forecast(auto.arima(data)) #(e)
+plot(a)
+#is duomenu grafiko buvo matyti,kad nuo 1990metu trendas buvo mazejantis.
+#del to galima daryti isvada,kad prognoze yra gerai nuspeta, liks mazejantis trendas
+
+fit4=ets(data)#(f)
+fc=forecast(fit4,h=20)
+plot(fc)
+#prognozes skiriasi,ets prognozuoja stabilu trenda
+
+fit4$aicc
+auto.arima(data)$aicc
+#mazesnis aicc yra auto arimos modelio,tad tas modelis yra galutinis ir tinkamiausias.
+```
+UZDUOTIS:2. For the usgdp data:
+(a) if necessary, find a suitable Box-Cox transformation for the data;
+(b) fit a suitable ARIMA model to the transformed data using
+auto.arima();
+(c) try some other plausible models by experimenting with the
+orders chosen;
+(d) choose what you think is the best model and check the residual
+diagnostics;
+(e) produce forecasts of your fitted model. Do the forecasts look
+reasonable?
+(f) compare the results with what you would obtain using ets()
+(with no transformation).
+
+```{r}
+data2=usgdp
+data2
+plot(data2)
+tsdisplay(data2)
+#duomenyse aiskus didejantis trendas. Nera sezoniskumo. Nera cikliskumo
+#naudosime box-cox transformacijos #(a)
+lambda1=BoxCox.lambda(data2)
+lambda1 #lambda=0.366
+tr1=BoxCox(data2, lambda=lambda1)
+plot(tr1)
+
+auto.arima(tr1) #(b)
+#ARIMA(2,1,0)
+
+#tikrinsime ar duomenys yra stacionarus #(c)
+ndiffs(tr1)
+plot(diff(tr1, diff=ndiffs(tr1))) 
+#H0: duomenys stacionarus
+#H1: duomenys nestacionarus
+kpss.test(diff(tr1, diff=ndiffs(tr1))) #p-value >0.05 duomenys yra stacionarus
+
+Acf(diff(tr1, diff=ndiffs(tr1)))
+#MA(2) nes tik du lagai uzlinde uz melynos linijos
+
+fit1=Arima(tr1,order=c(1,1,1))
+fit2=Arima(tr1,order=c(2,1,0))
+fit3=Arima(tr1,order=c(2,1,2))
+
+fit1$aicc
+fit2$aicc
+fit3$aicc
+auto.arima(tr1)$aicc
+#maziausias aicc yra auto.arima modelio,tai bus musu geriausias modelis
+
+#H0:paklaidos yra baltasis triuksmas
+#H1:paklaidos enra baltasis triuksmas
+Acf(residuals(auto.arima(tr1)))#(d)
+Box.test(residuals(auto.arima(tr1)), type="Lj")
+#p-value > 0.05 , tai paklaidos yra baltasis triuksmas, modelis geras.
+
+b=forecast(auto.arima(tr1)) #(e)
+plot(b)
+#is duomenu grafiko buvo matyti,didejanti trenda.
+#del to galima daryti isvada,kad prognoze yra logiska
+
+fit4=ets(data2)#(f)
+fc=forecast(fit4,h=20)
+plot(fc)
+#prognozes panasios
+
+fit4$aicc
+auto.arima(tr1)$aicc
+#mazesnis aicc yra auto arimos modelio,tad tas modelis yra galutinis ir tinkamiausias.
+```
+
+UZDUOTIS:3. For the mcopper data:
+(a) if necessary, find a suitable Box-Cox transformation for the data;
+(b) fit a suitable ARIMA model to the transformed data using
+auto.arima();
+(c) try some other plausible models by experimenting with the
+orders chosen;
+(d) choose what you think is the best model and check the residual
+diagnostics;
+(e) produce forecasts of your fitted model. Do the forecasts look
+reasonable?
+(f) compare the results with what you would obtain using ets()
+(with no transformation).
+```{r}
+data3=mcopper
+data3
+plot(data3)
+#daug svyravimu,aiskiai matosi,akd naudosime box-cox trnaformacija
+#(a)
+lambda2=BoxCox.lambda(data3)
+lambda2 #lambda=0.192
+tr2=BoxCox(data3, lambda=lambda2)
+plot(tr2)
+
+auto.arima(tr2) #(b)
+#ARIMA(0,1,1)
+
+#tikrinsime ar duomenys yra stacionarus #(c)
+ndiffs(tr2)
+plot(diff(tr2, diff=ndiffs(tr2))) 
+#H0: duomenys stacionarus
+#H1: duomenys nestacionarus
+kpss.test(diff(tr2, diff=ndiffs(tr2))) #p-value >0.05 duomenys yra stacionarus
+
+Acf(diff(tr2, diff=ndiffs(tr2)))
+#MA(1) nes tik vienas lagas uzlindes uz melynos linijos
+
+fit1=Arima(tr2,order=c(0,1,0))
+fit2=Arima(tr2,order=c(2,1,2))
+fit3=Arima(tr2,order=c(1,1,1))
+
+fit1$aicc
+fit2$aicc
+fit3$aicc
+auto.arima(tr2)$aicc
+#maziausias aicc yra auto.arima modelio,tai bus musu geriausias modelis
+
+#H0:paklaidos yra baltasis triuksmas
+#H1:paklaidos enra baltasis triuksmas
+Acf(residuals(auto.arima(tr2)))#(d)
+Box.test(residuals(auto.arima(tr2)), type="Lj")
+#p-value > 0.05 , tai paklaidos yra baltasis triuksmas, modelis geras.
+
+c=forecast(auto.arima(tr2),h=40) #(e)
+plot(c)
+#galima daryti isvada,kad prognoze yra logiska
+
+fit4=ets(data3)#(f)
+fc=forecast(fit4,h=20)
+plot(fc)
+#prognozes skiriasi
+
+fit4$aicc
+auto.arima(tr2)$aicc
+#mazesnis aicc yra auto arimos modelio,tad tas modelis yra galutinis ir tinkamiausias.
+```
