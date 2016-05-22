@@ -1,0 +1,77 @@
+---
+title: "task15"
+author: "Greta Baumilaitė"
+date: "Tuesday, May 22, 2016"
+output: html_document
+---
+UZDUOTIS:
+
+(a) Do the data need transforming? If so, ﬁnd a suitable transformation. 
+
+```{r}
+library(fpp)
+data=condmilk
+plot(data)
+tsdisplay(data)
+#kadangi duomenys yra sezoniski ir vyrauja labai reguliarus svyravimai, transformacijos nenaudosime
+
+```
+(b) Are the data stationary? If not, ﬁnd an appropriate diﬀerencing which yields stationary data. 
+
+```{r}
+#tikrinsim stacionaruma
+#H0: duomenys stacionarus
+#H1: duomenys nestacionarus
+kpss.test(data) #p-value >0.05, duomenys yra stacionarus
+
+#kadangi duomenys sezoniski,reikia panaikinti sezoniskuma
+
+data1=diff(data, lag=12) #uzdedam laga ant vieno sezono ir diferencijuojame
+plot(data1) #nera stacionarumo,teks diferencijuoti dar
+data2=diff(data1)
+plot(data2) #difeencijuojam dar kart
+data3=diff(data2)
+plot(data3) #gavom stacionarius duomenis
+#patikrinkime stacionaruma
+kpss.test(data3) #p value > 0.05, duomenys yra stacionarus
+```
+(c) Identify a couple of ARIMA models that might be useful in describing the time series. Which of your models is the best according to their AIC values? 
+```{r}
+tsdisplay(data3)
+
+autofit=auto.arima(data)
+autofit # gauname ARIMA(1,0,0)(2,0,0)[12]
+
+fit1=Arima(data, order=c(1,0,1), seasonal=c(2,0,1))
+fit2=Arima(data, order=c(1,0,2), seasonal=c(2,0,2))
+fit3=Arima(data, order=c(0,0,2), seasonal=c(1,0,0))
+#renkam geriausia model
+AIC(fit1)
+AIC(fit2)
+AIC(fit3)
+#maziausias AIC yra fit1 modelio,tai bus tinkamiausias modelis.
+```
+(d) Estimate the parameters of your best model and do diagnostic testing on the residuals. Do the residuals resemble white noise? If not, try to ﬁnd another ARIMA model which ﬁts better. 
+```{r}
+acf(residuals(fit1)) #panasu i baltaji triuksma
+#patikrinsime ar tai baltasis triuksmas
+Box.test(residuals(fit1), type="Lj")
+#p-value > 0.05,modelio paklaidos yra baltasis triuksmas
+
+```
+(e) Forecast the next 24 months of data using your preferred model. 
+```{r}
+
+plot(forecast(fit1, h=24))
+#prognoze ir jos svyravimai atrodo logiski
+```
+(f) Compare the forecasts obtained using ets().
+```{r}
+fit4= ets(data)
+plot(forecast(fit4))
+#gauta prognoze siek tiek skiriasi nuo auto.arimos prognozes,taciau abi prognozuoja svyravymus,kas yra logiska.Galim patikrinti kuri prognoze tikslesne:
+
+accuracy(fit1)
+accuracy(fit4)
+#ets prognoze tikslesne
+```
