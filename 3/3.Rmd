@@ -157,3 +157,21 @@ accuracy(forecast(mod34),ser)[,2]
 # geriausias modelis yra mod34
 modMAin=mod34
 ```
+
+
+
+
+
+
+
+Duomenys įkelti į "Egzaminas 2016-06-15" aplanką GitHub'e. Nuskaitomi duomenys:
+```{r}
+duomvisi <- read.csv2("data_a.csv", header = TRUE)
+duomvisi$amzius[duomvisi$amzius=="MISSING"] <- NA
+complete.cases(duomvisi)
+x <- na.omit(duomvisi)
+duomvisi <- read.csv2("data_a.csv", header = TRUE)
+duomvisi[duomvisi=="MISSING"] <- NA
+complete.cases(duomvisi)
+x <- na.omit(duomvisi)
+```
