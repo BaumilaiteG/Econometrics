@@ -1,0 +1,232 @@
+---
+title: "egzaminas"
+author: "Greta Baumilaitė"
+date: "Tuesday, June 15, 2016"
+output: html_document
+---
+3 uzduotis
+```{r}
+library(fpp)
+library(car)
+library(dynlm)
+data=M1Germany
+head(data)
+#nesuprantu duoto modelio, nepaaiskinta kas yra trikampelis,tad sudarysiu kitoki modeli ir ji vertinsiu, nezinau kaip sezonine dali pridet
+mod=dynlm(logprice~L(loggnp,1)+diff(L(loggnp,2)),data)
+mod
+
+#b)
+mod$res #lygties liekanos
+ser=ts(mod$res,start=c(1960,2),frequency=4)
+ser
+
+#c)
+#H0:duomenys stacionarus
+#H1:duomenys nestacionarus
+
+kpss.test(ser)
+#p-value=0.01< 0.05 H0atmetam, duomenys nestacionarus
+
+#kadangi mes turime gauti ,kad duomenys butu stacionarus
+#tai diferencijuosime du  kartus,kad gautume staconaruma
+df2=diff(BoxCox(ser,lambda=lambda1),differences=2)
+kpss.test(df2) # gavome,kad p-value > 0.05 ,kas reiskia ,kad duomenys stacionarus.
+ser1=df2 #stacionarus duomenys
+#d)
+plot(ser1)
+#is grafiko svyravimu,matosi,kad box-cox tranformacija nera naudinga,es mes jau panaudojoma ja,kad gautume stacionaruma,tai toliau naudojame ser1 trasformuotus duomenis, galime patikrinti pokycius su ser1
+l=BoxCox.lambda(ser1)
+l #lambda=1.075
+plot(BoxCox(ser1,l))
+#pokyciai labai mazi, tad nenaudosime transformacijos
+
+
+```
+
+
+Modeliavimas
+```{r}
+#a
+mod1=ets(ser)
+mod1
+#gavome ets(A,N,A) 
+#a-addictive errors n-no trend, n-addictive season
+
+#b kiti variantai
+mod11=holt(ser,h=20)
+plot(mod11)
+mod12=holt(ser,h=20, damped=TRUE, alpha=0.99, beta=0.5)
+plot(mod12)
+
+accuracy(mod1)
+accuracy(mod11)
+accuracy(mod12)
+#geriausias modelis pagal RMSE mod1 , ets funkcija tiksliausiai prognozuoja
+mod2=mod1
+
+
+#c
+mod3=auto.arima(ser)
+summary(mod3)
+#gavome ARIMA(3,1,0)(2,0,2,)[4] , tai yra ARIMA(p,d,q)(P,D,Q)
+#mazosios raides zymi nesezonine modelio dali 
+#p-autoregresine modelio dalis
+#d-dif eile siuo atveju skiriasi sezoniniu ir nesezoniniu duomenu diferencijavimo eile 1-nesezoniniu duoemnu dif eile,o 0-sezoniniu
+#q- moving average modelio dalis.Didziosiso raides tas pats tik sezoniniai daliai aparsyti, [] zymi periodus per sezona, siuo atvejju 4,nes ketvirciais
+
+#d
+mod21=arima(ser,order=c(1,1,0),seasonal=list(order=c(1,0,1),period=4))
+mod22=arima(ser,order=c(3,1,2),seasonal=list(order=c(2,0,2),period=4))
+mod23=arima(ser,order=c(2,1,0),seasonal=list(order=c(2,0,1),period=4))
+
+accuracy(mod21)
+accuracy(mod22)
+accuracy(mod23)
+#maziausias RMSE yra mod22
+mod4=mod22
+
+```
+
+
+Modelių tyrimas ir palyginimas
+```{r}
+#a
+#H0:liekanos yra baltasis triuksmas
+#H1:liekanos nera baltasis triuksmas
+
+acf(mod1$res) #tiketina bus baltasis triuksmas
+Box.test(mod1$res)
+#p-value=0.3052 >0.05 H0 primame
+
+acf(mod2$res) #tiketina bus baltasis triuksmas
+Box.test(mod2$res)
+#p-value=0.3052 >0.05 H0 primame
+
+acf(mod3$res) #tiketina bus baltasis triuksmas
+Box.test(mod3$res)
+#p-value=0.9949 >0.05 H0 primame
+
+acf(mod4$res) #tiketina bus baltasis triuksmas
+Box.test(mod4$res)
+#p-value=0.9208 >0.05 H0 primame
+#visi modeliai geri,nes liekanos yra bltasis triuksmas
+
+#b
+trainset=window(ser,end=c(1985,4))
+testset=window(ser, start=c(1986,1))
+
+#c
+#mod2=mod1 tai man lieka tris modelius patikrint
+mod31=ets(trainset,model='ANA')
+mod33=auto.arima(trainset)
+mod34=arima(trainset,order=c(3,1,2),seasonal=list(order=c(2,0,2),period=4))
+
+#d
+plot(forecast(mod31))
+lines(testset,col="red",lwd=3)
+
+plot(forecast(mod33))
+lines(testset,col="red",lwd=3)
+
+plot(forecast(mod34))
+lines(testset,col="red",lwd=3)
+#visos prognozes labai panasios,neisskiriu geriausios, prognozuoja beveik ta pati
+
+#e
+accuracy(forecast(mod31),ser)[,2]
+accuracy(forecast(mod33),ser)[,2]
+accuracy(forecast(mod34),ser)[,2]
+#kaip ir minejau,visos prognozes panasios, net RMSE yra panasus,taciau jis leidzia manyti,kad mod34 yra geriausias.
+
+
+```
+2 uzduotis
+```{r}
+#issisaugojau duomenys,jau be paskutiniu eiluciu,kur paaiskinimai visi
+getwd()
+duomvisi=read.csv2("duom.txt", header = TRUE)
+duomvisi[duomvisi=="NAN"]=NA #naikinu trukstamas vietas
+complete.cases(duomvisi) #patikrina kur NA reiksmes (false)
+x=na.omit(duomvisi) #sutvarkyti duomenys
+data=x[,-4] #nemoku elgtis su zyminiu kintamuoju
+str(data) #perziurimas duomenu tipas, visi yra factor
+#visi kintamieji yra faktoriai,reikia juos padaryt numeric
+
+
+data$islaidosVaisiams= as.numeric(as.factor(data$islaidosVaisiams))
+data$butinosIslaidos= as.numeric(as.factor(data$butinosIslaidos))
+data$pajamos= as.numeric(as.factor(data$pajamos))
+data$atstumasIkiParduotuves= as.numeric(as.factor(data$atstumasIkiParduotuves))
+str(data) #dbr visi kintamieji yra numeric
+plot(data)
+summary(data) #kintamieji labai panasus
+cor(data)#didziausias cor yra tarp atstumo iki paarduotuves(tai matyt jis nebus reiksmingas)
+
+
+#dalinu i trainset ir testset
+#http://www.gettinggeneticsdone.com/2011/02/split-data-frame-into-testing-and.html
+# splitdf function will return a list of training and testing sets
+splitdf =function(data, seed=NULL) {
+  if (!is.null(seed)) set.seed(seed)
+	index = 1:nrow(data)
+	trainindex = sample(index, trunc(length(index)*0.8))
+	trainset = data[trainindex, ]
+	testset = data[-trainindex, ]
+	list(trainset=trainset,testset=testset)
+}
+#apply the function
+splits = splitdf(data, seed=415)
+#it returns a list - two data frames called trainset and testset
+str(splits)
+# there are 75 observations in each data frame
+lapply(splits,nrow)
+#view the first few columns in each data frame
+lapply(splits,head)
+# save the training and testing sets as data frames
+training = splits$trainset
+testing = splits$testset
+ 
+
+```
+1.Tiesinio modelio sudarymas. Modelio sudarymui naudokite trainSet=training masyvą.
+
+
+```{r}
+mod1=lm(islaidosVaisiams~butinosIslaidos + pajamos+	atstumasIkiParduotuves, data=training)
+summary(mod1)
+#p-value butinu islaidu ir pajamu yra reiksmingi,kadangi jie < 0.05
+#kuriame modeli tik su reiksmingais kintamaisiais
+mod2=lm(islaidosVaisiams~butinosIslaidos + pajamos, data=training)
+summary(mod2) #visi kintamieji reiksmingi
+
+
+#tikrinamas koeficientu multikolinearumas
+vif(mod2) #jei vif>10, tai kintamieji bus multikolinearus, norint naikint multikolinearuma, reiketu panaikinti viena kintamaji. Kadangi mums liko du kintamieji,darau isvada(nes r'as to man neparodo), kad kintamieji nera multikoliearus. Tai geras zenklas
+
+#tikrinam  heteroskedastiskuma
+ncvTest(mod2) #jei p-value > 0.05 nera heteraskedastiskumo
+
+#tikrinam normaluma
+shapiro.test(mod2$res) #jei p-value >0.05 paklaidos nera normalios
+fit1=mod2 #negaliu patikrinti del r'o as viskas gerai,tai priskiriu mod2 ,kaip gera modeli
+
+#rizikos:
+#Heteroskedastiskumo problema galima isspresti logaritmuojant duomenis,naudoti weighted least squares metoda
+# Jei paklaidos nera normaliosios, tai galim gauti bloga F statistika
+# Multikolinearumo problema padidina koficientu standard errors, kas padidina antros rusies klaidos tikimybe
+
+```
+
+2.Modelio tobulinimas. Ar gali būti, kad duomenyse pasireiškė netiesinė sąveika? Siekiant ją patikti prasminga pasižiūrėti sklaidos diagramą tarp modelio paklaidų ir tiriamų kintamųjų.
+
+```{r}
+a=fit1$res
+b=lm(a~butinosIslaidos,data=training)
+plot(b)
+lowess(a,butinosIslaidos)
+p=lm(a~pajamos, data=training)
+plot(p)
+ #nebezinau ka toliau daryti....
+
+
+````
